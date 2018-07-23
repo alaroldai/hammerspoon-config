@@ -51,3 +51,11 @@ Supported window positions:
 
 
 Also included is the `hs.tiling` module, which is currently bound to `<Ctrl+Option> space`
+
+## Installation
+If all you're interested in is this configuration, cloning this repository as `~/.hammerspoon` should suffice:
+```bash
+$ git clone https://github.com/alaroldai/hammerspoon-config ~/.hammerspoon
+```
+
+If you want to include this as part of a larger configuration, I'd suggest cloning it elsewhere, then using lua's `dofile` directive to invoke `init.lua`.
