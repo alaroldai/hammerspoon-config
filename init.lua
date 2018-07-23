@@ -4,112 +4,127 @@ package.path = package.path .. ";/Users/alaroldai/conf/sync/hammerspoon/?.lua"
 
 local tiling = require "hs.tiling"
 
--- Maximise window
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "space", function()
-    hs.window.focusedWindow():maximize(0)
-end)
+hs.window.animationDuration = 0
 
-function moveWindowToScreen(win, scr)
-    local screen = win:screen()
-    local frame = screen:frame()
 
-    local relx = (win:frame().x - frame.x) / frame.w
-    local rely = (win:frame().y - frame.y) / frame.h
-    local relw = win:size().w / frame.w
-    local relh = win:size().h / frame.h
+local maximised = '[0, 0, 100, 100]'
 
-    if not scr then
-        return
-    end
+local halves = {}
+halves.left_edge = '[0, 0, 50, 100]'
+halves.down_edge = '[0, 50, 100, 100]'
+halves.upper_edge = '[0, 0, 100, 50]'
+halves.right_edge = '[50, 0, 100, 100]'
 
-    frame = scr:frame()
+local quarters = {}
+quarters.left_centred = '[0, 25, 50, 75]'
+quarters.down_centred = '[50, 25, 100, 75]'
+quarters.upper_centred = '[25, 0, 75, 50]'
+quarters.right_centred = '[25, 50, 75, 100]'
+quarters.top_left = '[0, 0, 50, 50]'
+quarters.bottom_left = '[0, 50, 50, 100]'
+quarters.top_right = '[50, 0, 100, 50]'
+quarters.bottom_right = '[50, 50, 100, 100]'
+quarters.centre = '[25, 25, 75, 75]'
 
-    win:setTopLeft(hs.geometry.point(  frame.x + relx * frame.w,
-                                    frame.y + rely * frame.h))
-    win:setSize(hs.geometry.size(relw * frame.w, relh * frame.h))
+local ninths = {}
+ninths.cells = {}
+ninths.cells.top_left = '[0, 0, 33, 33]'
+ninths.cells.top = '[33, 0, 66, 33]'
+ninths.cells.top_right = '[66, 0, 100, 33]'
+ninths.cells.bottom_left = '[0, 66, 33, 100]'
+ninths.cells.bottom = '[33, 66, 66, 100]'
+ninths.cells.bottom_right = '[66, 66, 100, 100]'
+ninths.cells.left_centred = '[0, 33, 33, 66]'
+ninths.cells.centre = '[33, 33, 66, 66]'
+ninths.cells.right_centred = '[66, 33, 100, 66]'
+
+ninths.columns = {}
+ninths.columns.left = '[0, 0, 33, 100]'
+ninths.columns.centre = '[33, 0, 66, 100]'
+ninths.columns.right = '[66, 0, 100, 100]'
+
+ninths.two_columns = {}
+ninths.two_columns.left = '[0, 0, 66, 100]'
+ninths.two_columns.right = '[33, 0, 100, 100]'
+
+ninths.rows = {}
+ninths.rows.top = '[0, 0, 100, 33]'
+ninths.rows.centre = '0, [33, 100, 66]'
+ninths.rows.bottom = '[0, 66, 100, 100]'
+
+
+
+function bind_resize_key (key, rect)
+  local resize_mask = {"cmd", "alt", "ctrl"}
+  hs.hotkey.bind(resize_mask, key, function()
+    hs.window.focusedWindow():moveToUnit(rect)
+  end)
 end
 
+bind_resize_key("forwarddelete", ninths.columns.left)
+bind_resize_key("end", ninths.columns.centre)
+bind_resize_key("pagedown", ninths.columns.right)
+bind_resize_key("help", ninths.two_columns.left)
+bind_resize_key("pageup", ninths.two_columns.right)
 
-function sameScreenReposition(win, x, y, w, h)
-    local frame = win:screen():frame()
-    win:setFrame(hs.geometry.rect(frame.x + frame.w * x, frame.y + frame.h * y, frame.w * w, frame.h * h), 0)
-end
-
--- Same-screen positioning
--- Whole edges
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "left", function()
-    sameScreenReposition(hs.window.focusedWindow(), 0, 0, 0.5, 1)
-end)
-
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "down", function()
-    sameScreenReposition(hs.window.focusedWindow(), 0, 0.5, 1, 0.5)
-end)
-
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "up", function()
-    sameScreenReposition(hs.window.focusedWindow(), 0, 0, 1, 0.5)
-end)
-
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "right", function()
-    sameScreenReposition(hs.window.focusedWindow(), 0.5, 0, 0.5, 1)
-end)
+bind_resize_key("space", maximised)
+bind_resize_key("left", halves.left_edge)
+bind_resize_key("down", halves.down_edge)
+bind_resize_key("up", halves.upper_edge)
+bind_resize_key("right", halves.right_edge)
 
 -- Centered edges
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "h", function()
-    sameScreenReposition(hs.window.focusedWindow(), 0, 0.25, 0.5, 0.5)
-end)
-
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "l", function()
-    sameScreenReposition(hs.window.focusedWindow(), 0.5, 0.25, 0.5, 0.5)
-end)
-
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "k", function()
-    sameScreenReposition(hs.window.focusedWindow(), 0.25, 0, 0.5, 0.5)
-end)
-
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "j", function()
-    sameScreenReposition(hs.window.focusedWindow(), 0.25, 0.5, 0.5, 0.5)
-end)
-
--- Center
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "m", function()
-    sameScreenReposition(hs.window.focusedWindow(), 0.25, 0.25, 0.5, 0.5)
-end)
+bind_resize_key("return", quarters.centre)
+bind_resize_key("h", quarters.left_centred)
+bind_resize_key("l", quarters.down_centred)
+bind_resize_key("k", quarters.upper_centred)
+bind_resize_key("j", quarters.right_centred)
 
 -- Corners
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "u", function()
-    sameScreenReposition(hs.window.focusedWindow(), 0, 0, 0.5, 0.5)
-end)
+bind_resize_key("u", quarters.top_left)
+bind_resize_key("n", quarters.bottom_left)
+bind_resize_key("[", quarters.top_right)
+bind_resize_key("/", quarters.bottom_right)
 
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "n", function()
-    sameScreenReposition(hs.window.focusedWindow(), 0, 0.5, 0.5, 0.5)
-end)
+-- Thirds
+bind_resize_key("i", ninths.cells.top_left)
+bind_resize_key("o", ninths.cells.top)
+bind_resize_key("p", ninths.cells.top_right)
+bind_resize_key("m", ninths.cells.bottom_left)
+bind_resize_key(",", ninths.cells.bottom)
+bind_resize_key(".", ninths.cells.bottom_right)
+bind_resize_key("g", ninths.cells.left_centred)
+bind_resize_key(";", ninths.cells.right_centred)
+bind_resize_key("'", ninths.cells.centre)
 
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "[", function()
-    sameScreenReposition(hs.window.focusedWindow(), 0.5, 0, 0.5, 0.5)
-end)
+local move_mask = {"alt", "ctrl"}
 
-hs.hotkey.bind({"cmd", "alt", "ctrl"}, "/", function()
-    sameScreenReposition(hs.window.focusedWindow(), 0.5, 0.5, 0.5, 0.5)
-end)
+function bind_move_key(mask, key, move_fn)
+  hs.hotkey.bind(mask, key, move_fn)
+end
 
 -- Moving windows to different screens
 function moveWest()
-    moveWindowToScreen(hs.window.focusedWindow(), hs.window.focusedWindow():screen():toWest())
+  local win = hs.window.focusedWindow()
+  win:moveToScreen(win:screen():toWest())
 end
 function moveEast()
-    moveWindowToScreen(hs.window.focusedWindow(), hs.window.focusedWindow():screen():toEast())
+  local win = hs.window.focusedWindow()
+  win:moveToScreen(win:screen():toEast())
 end
 function moveSouth()
-    moveWindowToScreen(hs.window.focusedWindow(), hs.window.focusedWindow():screen():toSouth())
+  local win = hs.window.focusedWindow()
+  win:moveToScreen(win:screen():toSouth())
 end
 function moveNorth()
-    moveWindowToScreen(hs.window.focusedWindow(), hs.window.focusedWindow():screen():toNorth())
+  local win = hs.window.focusedWindow()
+  win:moveToScreen(win:screen():toNorth())
 end
 
-hs.hotkey.bind({"alt", "ctrl"}, "h", moveWest)
-hs.hotkey.bind({"alt", "ctrl"}, "j", moveSouth)
-hs.hotkey.bind({"alt", "ctrl"}, "k", moveNorth)
-hs.hotkey.bind({"alt", "ctrl"}, "l", moveEast)
+bind_move_key(move_mask, "h", moveWest)
+bind_move_key(move_mask, "j", moveSouth)
+bind_move_key(move_mask, "k", moveNorth)
+bind_move_key(move_mask, "l", moveEast)
 
 hs.hotkey.bind({"alt", "ctrl"}, "space", function()
   tiling.goToLayout("gp-vertical")
@@ -127,15 +142,25 @@ end)
 --   tiling.cycle(1)
 -- end)
 
--- hs.hotkey.bind({"cmd", "alt"}, "h", function()
---     hs.window.focusedWindow():focuswindow_west()
--- end)
--- hs.hotkey.bind({"cmd", "alt"}, "j", function()
---     hs.window.focusedWindow():focuswindow_south()
--- end)
--- hs.hotkey.bind({"cmd", "alt"}, "k", function()
---     hs.window.focusedWindow():focuswindow_north()
--- end)
--- hs.hotkey.bind({"cmd", "alt"}, "l", function()
---     hs.window.focusedWindow():focuswindow_east()
--- end)
+local wf = hs.window.filter.copy(hs.window.filter.default)
+
+hs.hotkey.bind({"cmd", "alt"}, "h", function()
+  wf:setCurrentSpace(true):focusWindowWest(nil, nil, true)
+end)
+hs.hotkey.bind({"cmd", "alt"}, "j", function()
+  wf:setCurrentSpace(true):focusWindowSouth(nil, nil, true)
+end)
+hs.hotkey.bind({"cmd", "alt"}, "k", function()
+  wf:setCurrentSpace(true):focusWindowNorth(nil, nil, true)
+end)
+hs.hotkey.bind({"cmd", "alt"}, "l", function()
+  wf:setCurrentSpace(true):focusWindowEast(nil, nil, true)
+end)
+
+
+-- Switcher configuration
+-- local switcher = hs.window.switcher.new()
+-- switcher.ui.showThumbnails = false
+-- switcher.ui.fontName = 'SF UI Display'
+-- hs.hotkey.bind('alt', 'tab', nil, function() switcher:next() end)
+-- hs.hotkey.bind('alt-shift', 'tab', nil, function() switcher:previous() end)
