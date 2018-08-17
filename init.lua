@@ -81,13 +81,13 @@ bind_resize_key("k", quarters.upper_centred)
 bind_resize_key("j", quarters.right_centred)
 
 -- Corners
-bind_resize_key("u", quarters.top_left)
+bind_resize_key("y", quarters.top_left)
 bind_resize_key("n", quarters.bottom_left)
 bind_resize_key("[", quarters.top_right)
 bind_resize_key("/", quarters.bottom_right)
 
 -- Thirds
-bind_resize_key("i", ninths.cells.top_left)
+bind_resize_key("u", ninths.cells.top_left)
 bind_resize_key("o", ninths.cells.top)
 bind_resize_key("p", ninths.cells.top_right)
 bind_resize_key("m", ninths.cells.bottom_left)
