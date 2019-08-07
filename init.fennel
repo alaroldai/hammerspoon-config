@@ -1,0 +1,163 @@
+(set hs.window.animationDuration 0)
+
+; position-in-screen
+(each [key position (pairs {
+  "space"          "[0, 0, 100, 100]"    ; maximised
+  "down"           "[0 50 100 100]"      ; half row south
+  "up"             "[0 0 100 50]"        ; half row north
+  "left"           "[0 0 50 100]"        ; half col west
+  "right"          "[50 0 100 100]"      ; half col east
+  "f13"            "[0, 0, 100, 33]"     ; third row north
+  "f14"            "[0, 33, 100, 66]"    ; third row centre
+  "f15"            "[0, 66, 100, 100]"   ; third row south
+  "forwarddelete"  "[0, 0, 33, 100]"     ; third col west
+  "end"            "[33, 0, 66, 100]"    ; third col centre
+  "pagedown"       "[66, 0, 100, 100]"   ; third col east
+  "help"           "[0, 0, 66, 100]"     ; third col centrewest
+  "pageup"         "[33, 0, 100, 100]"   ; third col centreeast
+  "h"              "[0, 25, 50, 75]"     ; quarter cell west
+  "l"              "[50, 25, 100, 75]"   ; quarter cell east
+  "k"              "[25, 0, 75, 50]"     ; quarter cell north
+  "j"              "[25, 50, 75, 100]"   ; quarter cell south
+  "u"              "[0, 0, 50, 50]"      ; quarter cell northwest
+  "m"              "[0, 50, 50, 100]"    ; quarter cell southwest
+  "o"              "[50, 0, 100, 50]"    ; quarter cell northeast
+  "."              "[50, 50, 100, 100]"  ; quarter cell southeast
+  "return"         "[25, 25, 75, 75]"    ; quarter cell centre
+  "y"              "[0, 0, 33, 33]"      ; ninth cell northwest
+  "i"              "[33, 0, 66, 33]"     ; ninth cell north
+  "["              "[66, 0, 100, 33]"    ; ninth cell northeast
+  "n"              "[0, 66, 33, 100]"    ; ninth cell southwest
+  ","              "[33, 66, 66, 100]"   ; ninth cell south
+  "/"              "[66, 66, 100, 100]"  ; ninth cell southeast
+  "g"              "[0, 33, 33, 66]"     ; ninth cell west
+  ";"              "[66, 33, 100, 66]"   ; ninth cell east
+  "'"              "[33, 33, 66, 66]"    ; ninth cell centre
+  })]
+  (hs.hotkey.bind ["cmd" "alt" "ctrl"] key (fn [] (hs.window.moveToUnit (hs.window.focusedWindow) position))))
+
+; move-to-screen
+(each [key direction (pairs {
+    "h" :toWest
+    "j" :toSouth
+    "k" :toNorth
+    "l" :toEast
+  })]
+  (hs.hotkey.bind ["alt" "ctrl"] key (fn []
+    (let [
+        win (hs.window.focusedWindow)
+        screen (: win :screen)
+        direction (: screen direction)
+      ] (hs.window.moveToScreen win direction)))))
+
+; focus-window
+(let [
+  focus-mask ["cmd" "alt"]
+  filter (hs.window.filter.copy hs.window.filter.default)
+  keymap {
+    "h" :focusWindowWest
+    "j" :focusWindowSouth
+    "k" :focusWindowNorth
+    "l" :focusWindowEast
+  }]
+  (: filter :setCurrentSpace true)
+  (each [key direction (pairs keymap)]
+    (hs.hotkey.bind focus-mask key (fn [] (: filter direction nil nil true)))))
+
+; show alerts from url
+(hs.urlevent.bind "alert" (fn [name params]
+  (let [text params.q]
+    (if text (hs.alert.show text)))))
+
+(hs.urlevent.bind "pullWindow" (fn [name params]
+  (let [
+    appName params.appName
+    unsafeSpaces (require "hs._asm.undocumented.spaces")
+    target (-?> appName (hs.application.get) (hs.application.mainWindow))
+    win (hs.window.focusedWindow)
+    screen (or
+      (hs.screen.mainScreen)
+      (hs.mouse.getCurrentScreen)
+      (hs.screen.primaryScreen)
+      )
+    screenSpacesUUID (: screen :spacesUUID)
+    targetSpace (unsafeSpaces.activeSpace)
+    frame
+      (if (and win (= (: win :subrole) "AXStandardWindow"))
+        (: win :frame)
+        (let [w (: target :frame)
+              s (: (: target :screen) :frame)
+              ts (: screen :frame)
+            ]
+            (hs.geometry.rect (* ts.w (/ (- w.x s.x) s.w))
+                              (* ts.h (/ (- w.y s.y) s.h))
+                              (* ts.w (/ w.w s.w))
+                              (* ts.h (/ w.h s.h)))))
+  ]
+  (doto target
+    (: :setFrame frame)
+    (: :spacesMoveTo targetSpace)
+    (: :focus)
+    ))))
+
+; ; alfred statusbar
+; (local text-draw {
+;   :text nil
+;   :show (fn [self] 
+;     (if self.text (: self :hide))
+;       (let [
+;           main-screen (hs.screen.mainScreen)
+;           main-res (: (hs.window.frontmostWindow) :frame)
+;           date-str (os.date "%a %m.%d %H.%M")
+;           text (hs.styledtext.new date-str {
+;             :font {:name "SF Mono":size 30 }
+;             :color {:red 0.7 :green 0.3 :blue 0.3 :alpha 1.0 }
+;             :paragraphStyle {:alignment "right"}
+;           })
+;           width 600
+;           height 50
+;           rect (hs.geometry.rect
+;             (- (+ main-res.x main-res.w) width)
+;             (- (+ main-res.y main-res.h) height)
+;             width
+;             height)
+;         ]
+
+;         (tset self :text (hs.drawing.text rect text))
+;         (doto self.text
+;           (: :setLevel hs.drawing.windowLevels.overlay)
+;           (: :show)
+;         )
+;       )
+;     )
+;   :hide (fn [self]
+;     (if self.text (: self.text :delete))
+;     (tset self :text nil))
+; })
+
+; (let [
+;   alfred (hs.application.newWatcher
+;     (hs.application.find "com.runningwithcrayons.Alfred")
+;     (fn [element event watcher userData]
+;       (let [
+;         shown hs.uielement.watcher.applicationShown
+;         activated hs.uielement.watcher.applicationActivated
+;         hidden hs.uielement.watcher.applicationHidden
+;         deactivated hs.uielement.watcher.applicationDeactivated
+;       ]
+;       (match event
+;             shown (: text-draw :show)
+;             activated (: text-draw :show)
+;             hidden (: text-draw :hide)
+;             deactivated (: text-draw :hide)
+;       ))))
+;   ]
+
+;   (: alfred :start [
+;       hs.uielement.watcher.applicationShown
+;       hs.uielement.watcher.applicationHidden
+;       hs.uielement.watcher.applicationActivated
+;       hs.uielement.watcher.applicationDeactivated
+;       hs.uielement.watcher.focusedWindowChanged
+;     ])
+; )
