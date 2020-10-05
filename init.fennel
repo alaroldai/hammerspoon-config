@@ -15,6 +15,7 @@
   "pagedown"       "[66, 0, 100, 100]"   ; third col east
   "help"           "[0, 0, 66, 100]"     ; third col centrewest
   "pageup"         "[33, 0, 100, 100]"   ; third col centreeast
+  "home"           "[25,0, 75, 100]"
   "h"              "[0, 25, 50, 75]"     ; quarter cell west
   "l"              "[50, 25, 100, 75]"   ; quarter cell east
   "k"              "[25, 0, 75, 50]"     ; quarter cell north
@@ -34,7 +35,9 @@
   ";"              "[66, 33, 100, 66]"   ; ninth cell east
   "'"              "[33, 33, 66, 66]"    ; ninth cell centre
   })]
-  (hs.hotkey.bind ["cmd" "alt" "ctrl"] key (fn [] (hs.window.moveToUnit (hs.window.focusedWindow) position))))
+  (hs.hotkey.bind ["cmd" "alt" "ctrl"] key (fn []
+    (let [window (hs.window.focusedWindow)] (window.moveToUnit window position))
+  )))
 
 ; move-to-screen
 (each [key direction (pairs {
@@ -48,7 +51,7 @@
         win (hs.window.focusedWindow)
         screen (: win :screen)
         direction (: screen direction)
-      ] (hs.window.moveToScreen win direction)))))
+      ] (win.moveToScreen win direction)))))
 
 ; focus-window
 (let [
