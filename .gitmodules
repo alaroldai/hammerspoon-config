@@ -1,3 +1,0 @@
-[submodule "tiling"]
-  path = hs/tiling
-  url = https://github.com/dsanson/hs.tiling

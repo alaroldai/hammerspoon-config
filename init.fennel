@@ -34,7 +34,9 @@
   ";"              "[66, 33, 100, 66]"   ; ninth cell east
   "'"              "[33, 33, 66, 66]"    ; ninth cell centre
   })]
-  (hs.hotkey.bind ["cmd" "alt" "ctrl"] key (fn [] (hs.window.moveToUnit (hs.window.focusedWindow) position))))
+  (hs.hotkey.bind ["cmd" "alt" "ctrl"] key (fn []
+    (let [w (hs.window.focusedWindow)]
+      (: w :moveToUnit position)))))
 
 ; move-to-screen
 (each [key direction (pairs {
@@ -48,32 +50,32 @@
         win (hs.window.focusedWindow)
         screen (: win :screen)
         direction (: screen direction)
-      ] (hs.window.moveToScreen win direction)))))
+      ] (: win :moveToScreen direction)))))
 
-; focus-window
-(let [
-  focus-mask ["cmd" "alt"]
-  filter (hs.window.filter.copy hs.window.filter.default)
-  keymap {
-    "h" :focusWindowWest
-    "j" :focusWindowSouth
-    "k" :focusWindowNorth
-    "l" :focusWindowEast
-  }]
-  (: filter :setCurrentSpace true)
-  (each [key direction (pairs keymap)]
-    (hs.hotkey.bind focus-mask key (fn [] (: filter direction nil nil true)))))
+; ; focus-window
+; (let [
+;   focus-mask ["cmd" "alt"]
+;   filter (hs.window.filter.copy hs.window.filter.default)
+;   keymap {
+;     "h" :focusWindowWest
+;     "j" :focusWindowSouth
+;     "k" :focusWindowNorth
+;     "l" :focusWindowEast
+;   }]
+;   (: filter :setCurrentSpace true)
+;   (each [key direction (pairs keymap)]
+;     (hs.hotkey.bind focus-mask key (fn [] (: filter direction nil nil true)))))
 
-; show alerts from url
-(hs.urlevent.bind "alert" (fn [name params]
-  (let [text params.q]
-    (if text (hs.alert.show text)))))
+; ; show alerts from url
+; (hs.urlevent.bind "alert" (fn [name params]
+;   (let [text params.q]
+;     (if text (hs.alert.show text)))))
 
 (hs.urlevent.bind "pullWindow" (fn [name params]
   (let [
     appName params.appName
     unsafeSpaces (require "hs._asm.undocumented.spaces")
-    target (-?> appName (hs.application.get) (hs.application.mainWindow))
+    target (-?> params.appName (hs.application.get) (: :mainWindow))
     win (hs.window.focusedWindow)
     screen (or
       (hs.screen.mainScreen)
