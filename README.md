@@ -68,4 +68,4 @@ Other options include:
 
 This configuration is written in [Fennel](https://fennel-lang.org), and a makefile is included for compiling the Lua output. If you want to modify the source, you'll need to install Fennel.
 
-Also, I've used [asmagill](https://github.com/asmagill/hs._asm.undocumented.spaces)'s spaces addition to Hammerspoon to allow the "pull window" script to identify the active space.
+Also, I've used [asmagill](https://github.com/asmagill/hs._asm.spaces)'s spaces addition to Hammerspoon to allow the "pull window" script to identify the active space.

@@ -17,7 +17,7 @@ for key, direction in pairs({h = "toWest", j = "toSouth", k = "toNorth", l = "to
 end
 local function _0_(name, params)
   local appName = params.appName
-  local unsafeSpaces = require("hs._asm.undocumented.spaces")
+  local spaces = require("hs.spaces")
   local target
   do
     local _1_ = params.appName
@@ -34,8 +34,7 @@ local function _0_(name, params)
   end
   local win = hs.window.focusedWindow()
   local screen = (hs.screen.mainScreen() or hs.mouse.getCurrentScreen() or hs.screen.primaryScreen())
-  local screenSpacesUUID = screen:spacesUUID()
-  local targetSpace = unsafeSpaces.activeSpace()
+  local targetSpace = spaces.activeSpaceOnScreen()
   local frame
   if (win and (win:subrole() == "AXStandardWindow")) then
     frame = win:frame()
@@ -45,9 +44,10 @@ local function _0_(name, params)
     local ts = screen:frame()
     frame = hs.geometry.rect((ts.w * ((w.x - s.x) / s.w)), (ts.h * ((w.y - s.y) / s.h)), (ts.w * (w.w / s.w)), (ts.h * (w.h / s.h)))
   end
+  print(targetSpace)
   local _3_ = target
   _3_:setFrame(frame)
-  _3_:spacesMoveTo(targetSpace)
+  spaces.moveWindowToSpace(_3_, targetSpace)
   _3_:focus()
   return _3_
 end

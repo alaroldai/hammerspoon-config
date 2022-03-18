@@ -74,16 +74,15 @@
 (hs.urlevent.bind "pullWindow" (fn [name params]
   (let [
     appName params.appName
-    unsafeSpaces (require "hs._asm.undocumented.spaces")
-    target (-?> params.appName (hs.application.get) (: :mainWindow))
+    spaces (require "hs.spaces")
+    target (-?> params.appName hs.application.get (: :mainWindow))
     win (hs.window.focusedWindow)
     screen (or
       (hs.screen.mainScreen)
       (hs.mouse.getCurrentScreen)
       (hs.screen.primaryScreen)
       )
-    screenSpacesUUID (: screen :spacesUUID)
-    targetSpace (unsafeSpaces.activeSpace)
+    targetSpace (spaces.activeSpaceOnScreen)
     frame
       (if (and win (= (: win :subrole) "AXStandardWindow"))
         (: win :frame)
@@ -98,6 +97,6 @@
   ]
   (doto target
     (: :setFrame frame)
-    (: :spacesMoveTo targetSpace)
+    (spaces.moveWindowToSpace targetSpace)
     (: :focus)
     ))))
